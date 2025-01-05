@@ -1,6 +1,6 @@
 ---
 # --------------------------------------------------------------
-# Arista EVPN Deployment Guide Topology
+# Arista EVPN Deployment Guide Topology - Domain B
 # --------------------------------------------------------------
 
 name: arista-evpn-dg
@@ -19,13 +19,29 @@ topology:
 
   kinds:
     ceos:
-      image: arista/ceos:latest
+      image: arista/ceos:4.32.3M
     linux:
       image: ghcr.io/aristanetworks/aclabs/host-ubuntu:rev1.0
       binds:
-        - /techlib-vxlan-domain-b:/workspace:ro
+        # - /techlib-vxlan-domain-b:/workspace:ro
 
   nodes:
+
+    graphite:
+      kind: linux
+      image: netreplica/graphite
+      env:
+        HOST_CONNECTION: ${SSH_CONNECTION}
+      binds:
+        - __clabDir__/topology-data.json:/htdocs/default/default.json:ro
+        - __clabDir__/ansible-inventory.yml:/htdocs/lab/default/ansible-inventory.yml:ro
+      ports:
+        - 8080:80
+      exec:
+        - sh -c 'graphite_motd.sh 8080'
+      labels:
+        graph-hide: yes
+
 
 ###############################################################
 ###############################################################
@@ -48,21 +64,33 @@ topology:
       kind: ceos
       mgmt-ipv4: 172.100.100.114
       startup-config: init-configs/B-SPINE1.cfg
+      labels:
+        graph-level: 3
+        graph-icon: switch
 
     B-SPINE2:
       kind: ceos
       mgmt-ipv4: 172.100.100.115
       startup-config: init-configs/B-SPINE2.cfg
+      labels:
+        graph-level: 3
+        graph-icon: switch
 
     B-SPINE3:
       kind: ceos
       mgmt-ipv4: 172.100.100.116
       startup-config: init-configs/B-SPINE3.cfg
+      labels:
+        graph-level: 3
+        graph-icon: switch
 
     B-SPINE4:
       kind: ceos
       mgmt-ipv4: 172.100.100.117
       startup-config: init-configs/B-SPINE4.cfg
+      labels:
+        graph-level: 3
+        graph-icon: switch
 
 #########################
 # DC "B" LEAF           #
@@ -72,46 +100,73 @@ topology:
       kind: ceos
       mgmt-ipv4: 172.100.100.118
       startup-config: init-configs/B-LEAF1.cfg
+      labels:
+        graph-level: 4
+        graph-icon: switch
 
     B-LEAF2:
       kind: ceos
       mgmt-ipv4: 172.100.100.119
       startup-config: init-configs/B-LEAF2.cfg
+      labels:
+        graph-level: 4
+        graph-icon: switch
 
     B-LEAF3:
       kind: ceos
       mgmt-ipv4: 172.100.100.120
       startup-config: init-configs/B-LEAF3.cfg
+      labels:
+        graph-level: 4
+        graph-icon: switch
 
     B-LEAF4:
       kind: ceos
       mgmt-ipv4: 172.100.100.121
       startup-config: init-configs/B-LEAF4.cfg
+      labels:
+        graph-level: 4
+        graph-icon: switch
 
     B-LEAF5:
       kind: ceos
       mgmt-ipv4: 172.100.100.122
       startup-config: init-configs/B-LEAF5.cfg
+      labels:
+        graph-level: 4
+        graph-icon: switch
 
     B-LEAF6:
       kind: ceos
       mgmt-ipv4: 172.100.100.123
       startup-config: init-configs/B-LEAF6.cfg
+      labels:
+        graph-level: 4
+        graph-icon: switch
 
     B-LEAF7:
       kind: ceos
       mgmt-ipv4: 172.100.100.124
       startup-config: init-configs/B-LEAF7.cfg
+      labels:
+        graph-level: 4
+        graph-icon: switch
 
     B-LEAF8:
       kind: ceos
       mgmt-ipv4: 172.100.100.125
       startup-config: init-configs/B-LEAF8.cfg
+      labels:
+        graph-level: 4
+        graph-icon: switch
 
     B-SW1:
       kind: ceos
       mgmt-ipv4: 172.100.100.139
       startup-config: init-configs/B-SW1.cfg
+      labels:
+        graph-level: 5
+        graph-icon: switch
 
 #########################
 # DC "B" HostC6          #
@@ -127,6 +182,9 @@ topology:
         STATIC_ROUTE: 10.0.0.0/8
         GW: 10.20.20.1
         IPV6: 2001:db8:20:20::101/64
+      labels:
+        graph-level: 5
+        graph-icon: host
 
     # HostB2 is connected to LEAF1 eth8 and LEAF2 eth8
     HostB2:
@@ -138,6 +196,9 @@ topology:
         STATIC_ROUTE: 10.0.0.0/8
         GW: 10.40.40.1
         IPV6: 2001:db8:40:40::101/64
+      labels:
+        graph-level: 5
+        graph-icon: host
 
     # HostB3 is connected to LEAF3 eth7
     HostB3:
@@ -148,6 +209,9 @@ topology:
         STATIC_ROUTE: 10.0.0.0/8
         GW: 10.60.60.1
         IPV6: 2001:db8:60:60::101/64
+      labels:
+        graph-level: 5
+        graph-icon: host
 
     # HostB4 is connected to LEAF3 eth8 and LEAF4 eth8
     HostB4:
@@ -159,6 +223,9 @@ topology:
         STATIC_ROUTE: 10.0.0.0/8
         GW: 10.10.10.1
         IPV6: 2001:db8:10:10::103/64
+      labels:
+        graph-level: 5
+        graph-icon: host
 
     # HostB5 is connected to LEAF4 eth7
     HostB5:
@@ -169,6 +236,9 @@ topology:
         STATIC_ROUTE: 10.0.0.0/8
         GW: 10.70.70.1
         IPV6: 2001:db8:70:70::102/64
+      labels:
+        graph-level: 5
+        graph-icon: host
 
     # HostB6 is connected to B-SW1 eth3
     HostB6:
@@ -179,6 +249,9 @@ topology:
         STATIC_ROUTE: 10.0.0.0/8
         GW: 10.40.40.1
         IPV6: 2001:db8:40:40::102/64
+      labels:
+        graph-level: 6
+        graph-icon: host
 
     # HostB7 is connected to B-SW1 eth4
     HostB7:
@@ -189,6 +262,29 @@ topology:
         STATIC_ROUTE: 10.0.0.0/8
         GW: 10.80.80.1
         IPV6: 2001:db8:80:80::101/64
+      labels:
+        graph-level: 6
+        graph-icon: host
+
+#########################
+# Backbone              #
+#########################
+
+    BB1:
+      kind: ceos
+      mgmt-ipv4: 172.100.100.126
+      startup-config: init-configs/BB1.cfg
+      labels:
+        graph-level: 1
+        graph-icon: switch
+
+    BB2:
+      kind: ceos
+      mgmt-ipv4: 172.100.100.127
+      startup-config: init-configs/BB2.cfg
+      labels:
+        graph-level: 1
+        graph-icon: switch
 
   links:
 ######################
@@ -258,3 +354,10 @@ topology:
     - endpoints: ["HostB5:eth1", "B-LEAF4:et7"]
     - endpoints: ["HostB6:eth1", "B-SW1:et3"]
     - endpoints: ["HostB7:eth1", "B-SW1:et4"]
+########################
+# Backbone             #
+########################
+    - endpoints: ["BB1:et3", "B-LEAF7:et7"]
+    - endpoints: ["BB1:et4", "B-LEAF8:et7"]
+    - endpoints: ["BB2:et3", "B-LEAF7:et8"]
+    - endpoints: ["BB2:et4", "B-LEAF8:et8"]
