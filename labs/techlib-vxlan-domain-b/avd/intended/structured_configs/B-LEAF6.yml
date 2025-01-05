@@ -27,6 +27,7 @@ router_bgp:
     send_community: all
     maximum_routes: 0
     remote_as: '65200'
+    session_tracker: TRACK-LOCAL-EVPN-PEERS
   address_family_evpn:
     peer_groups:
     - name: LOCAL-EVPN-PEERS
@@ -110,6 +111,9 @@ router_bgp:
       - 10040:10040
     redistribute_routes:
     - learned
+  session_trackers:
+  - name: TRACK-LOCAL-EVPN-PEERS
+    recovery_delay: 300
 static_routes:
 - vrf: MGMT
   destination_address_prefix: 0.0.0.0/0
@@ -376,6 +380,5 @@ metadata:
   platform: cEOS-LAB
 dhcp_relay:
   tunnel_requests_disabled: true
-  mlag_peerlink_requests_disabled: true
 ip_dhcp_relay:
   information_option: true

@@ -301,7 +301,7 @@ aaa authorization exec default local
 ### DHCP Relay Summary
 
 - DHCP Relay is disabled for tunnelled requests
-- DHCP Relay is disabled for MLAG peer-link requests
+- DHCP Relay is enabled for MLAG peer-link requests
 
 ### DHCP Relay Device Configuration
 
@@ -309,7 +309,6 @@ aaa authorization exec default local
 !
 dhcp relay
    tunnel requests disabled
-   mlag peer-link requests disabled
 ```
 
 ## Spanning Tree
@@ -525,6 +524,7 @@ interface Ethernet8
 interface Port-Channel8
    description SERVER_HostB4
    no shutdown
+   bgp session tracker TRACK-LOCAL-EVPN-PEERS
    switchport access vlan 10
    switchport mode access
    switchport
@@ -858,6 +858,7 @@ ASN Notation: asplain
 | Remote AS | 65200 |
 | Source | Loopback0 |
 | BFD | True |
+| Session tracker | TRACK-LOCAL-EVPN-PEERS |
 | Send community | all |
 | Maximum routes | 0 (no limit) |
 
@@ -896,6 +897,12 @@ ASN Notation: asplain
 | DEV | 1.1.2.4:50002 | connected | IPv4: True<br>Transit: False |
 | PROD | 1.1.2.4:50001 | connected | IPv4: True<br>Transit: False |
 
+#### Router BGP Session Trackers
+
+| Session Tracker Name | Recovery Delay (in seconds) |
+| -------------------- | --------------------------- |
+| TRACK-LOCAL-EVPN-PEERS | 300 |
+
 #### Router BGP Device Configuration
 
 ```eos
@@ -912,6 +919,7 @@ router bgp 65200
    neighbor LOCAL-EVPN-PEERS remote-as 65200
    neighbor LOCAL-EVPN-PEERS update-source Loopback0
    neighbor LOCAL-EVPN-PEERS bfd
+   neighbor LOCAL-EVPN-PEERS session tracker TRACK-LOCAL-EVPN-PEERS
    neighbor LOCAL-EVPN-PEERS password 7 <removed>
    neighbor LOCAL-EVPN-PEERS send-community
    neighbor LOCAL-EVPN-PEERS maximum-routes 0
@@ -966,6 +974,8 @@ router bgp 65200
       router-id 1.1.2.4
       redistribute connected
       evpn multicast
+   session tracker TRACK-LOCAL-EVPN-PEERS
+      recovery delay 300 seconds
 ```
 
 ## BFD

@@ -55,6 +55,13 @@ custom_vtep_bgp:
     route:
       import_ethernet_segment_ip_mass_withdraw: true
       export_ethernet_segment_ip_mass_withdraw: true
+  peer_groups:
+    - name: LOCAL-EVPN-PEERS
+      session_tracker: TRACK-LOCAL-EVPN-PEERS
+  session_trackers:
+    - name: TRACK-LOCAL-EVPN-PEERS
+      recovery_delay: 300
+
 
 custom_vtep_dhcp_relay:
   tunnel_requests_disabled: true

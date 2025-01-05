@@ -11,6 +11,9 @@ port_profiles:
     vlans: 10
     port_channel:
       mode: active
+      structured_config:
+        bgp:
+          session_tracker: TRACK-LOCAL-EVPN-PEERS
     ethernet_segment:
       short_esi: auto
 
@@ -21,6 +24,9 @@ port_profiles:
     vlans: 20
     port_channel:
       mode: active
+      structured_config:
+        bgp:
+          session_tracker: TRACK-LOCAL-EVPN-PEERS
     ethernet_segment:
       short_esi: auto
 
@@ -31,6 +37,9 @@ port_profiles:
     vlans: 40
     port_channel:
       mode: active
+      structured_config:
+        bgp:
+          session_tracker: TRACK-LOCAL-EVPN-PEERS
     ethernet_segment:
       short_esi: auto
 
@@ -53,6 +62,9 @@ port_profiles:
     vlans: 70
     port_channel:
       mode: active
+      structured_config:
+        bgp:
+          session_tracker: TRACK-LOCAL-EVPN-PEERS
     ethernet_segment:
       short_esi: auto
 

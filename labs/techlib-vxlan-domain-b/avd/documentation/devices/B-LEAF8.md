@@ -301,7 +301,7 @@ aaa authorization exec default local
 ### DHCP Relay Summary
 
 - DHCP Relay is disabled for tunnelled requests
-- DHCP Relay is disabled for MLAG peer-link requests
+- DHCP Relay is enabled for MLAG peer-link requests
 
 ### DHCP Relay Device Configuration
 
@@ -309,7 +309,6 @@ aaa authorization exec default local
 !
 dhcp relay
    tunnel requests disabled
-   mlag peer-link requests disabled
 ```
 
 ## Spanning Tree
@@ -938,6 +937,12 @@ ASN Notation: asplain
 | DEV | 1.1.2.8:50002 | connected | IPv4: True<br>Transit: False |
 | PROD | 1.1.2.8:50001 | connected | IPv4: True<br>Transit: False |
 
+#### Router BGP Session Trackers
+
+| Session Tracker Name | Recovery Delay (in seconds) |
+| -------------------- | --------------------------- |
+| TRACK-LOCAL-EVPN-PEERS | 300 |
+
 #### Router BGP Device Configuration
 
 ```eos
@@ -1047,6 +1052,8 @@ router bgp 65200
       router-id 1.1.2.8
       redistribute connected
       evpn multicast
+   session tracker TRACK-LOCAL-EVPN-PEERS
+      recovery delay 300 seconds
 ```
 
 ## BFD
