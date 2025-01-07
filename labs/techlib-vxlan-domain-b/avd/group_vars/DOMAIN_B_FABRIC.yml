@@ -8,9 +8,6 @@ overlay_routing_protocol: ibgp
 
 bgp_as: 65200
 
-uplink_ptp:
-  enable: true
-
 bgp_distance:
   external_routes: 20
   internal_routes: 200
