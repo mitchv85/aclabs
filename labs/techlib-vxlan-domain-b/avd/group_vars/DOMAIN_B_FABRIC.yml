@@ -30,6 +30,8 @@ bgp_peer_groups:
 
 bgp_update_wait_install: true
 
+bgp_default_ipv4_unicast: false
+
 evpn_import_pruning: true
 
 evpn_multicast: true
