@@ -1,0 +1,54 @@
+---
+name: custom-topology
+prefix: ""
+
+mgmt:
+  network: custom_mgmt
+  ipv4-subnet: 10.0.0.0/16
+
+topology:
+  kinds:
+    ceos:
+      enforce-startup-config: true
+      image: arista/ceos:latest
+    linux:
+      image: ghcr.io/aristanetworks/aclabs/host-ubuntu:rev1.0
+
+  defaults:
+    kind: ceos
+
+  nodes:
+    EOS1:
+      mgmt-ipv4: 10.0.1.1
+      binds:
+        - sn/EOS.txt:/mnt/flash/ceos-config:ro
+      startup-config: init-configs/EOS1.cfg
+
+    EOS2:
+      mgmt-ipv4: 10.0.1.2
+      binds:
+        - sn/EOS2.txt:/mnt/flash/ceos-config:ro
+      startup-config: init-configs/EOS2.cfg
+
+    Host1:
+      kind: linux
+      mgmt-ipv4: 10.0.3.1
+      env:
+        IPV4: 10.10.10.101/24
+        STATIC_ROUTE: 10.0.0.0/8
+        GW: 10.10.10.1
+        IPV6: 2001:db8:10:10::101/64
+
+    Host2:
+      kind: linux
+      mgmt-ipv4: 10.0.3.2
+      env:
+        IPV4: 10.20.20.101/24
+        STATIC_ROUTE: 10.0.0.0/8
+        GW: 10.20.20.1
+        IPV6: 2001:db8:20:20::101/64
+
+  links:
+    - endpoints: [ "EOS1:et1", "EOS2:et1" ]
+    - endpoints: [ "Host1:eth1", "EOS1:et2" ]
+    - endpoints: [ "Host2:eth1", "EOS2:et2" ]
