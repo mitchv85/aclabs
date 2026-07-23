@@ -21,6 +21,35 @@
   gather_facts: false
   connection: local
 
+  pre_tasks:
+    # The es_multidomain catalog references the custom techlib test package
+    # by module path; ANTA's catalog parser imports it in the CONTROLLER
+    # python. Check it up front and fail with the exact install command
+    # instead of a mid-run ValidationError.
+    - name: Preflight — custom techlib test package importable
+      ansible.builtin.command:
+        argv:
+          - "{{ ansible_playbook_python }}"
+          - "-c"
+          - "import anta_techlib_tests"
+      changed_when: false
+      run_once: true
+      delegate_to: localhost
+      register: _techlib_import
+      ignore_errors: true
+
+    - name: Preflight — fail with the install command if missing
+      ansible.builtin.fail:
+        msg: >-
+          Custom ANTA test package not installed in the controller python
+          ({{ ansible_playbook_python }}). Install once with:
+          {{ ansible_playbook_python }} -m pip install -e
+          {{ playbook_dir }}/../anta/anta_techlib_tests
+          (add --break-system-packages if pip refuses under PEP 668).
+      when: _techlib_import.rc != 0
+      run_once: true
+      delegate_to: localhost
+
   tasks:
     - name: Run the ANTA workflow (AVD auto-catalogs + user catalogs)
       ansible.builtin.import_role:
