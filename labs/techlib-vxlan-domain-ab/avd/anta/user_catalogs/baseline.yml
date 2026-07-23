@@ -12,7 +12,8 @@ anta.tests.system:
   - VerifyReloadCause:
   - VerifyCoredump:
   - VerifyAgentLogs:
-  - VerifyCPUUtilization:
+  # VerifyCPUUtilization dropped: cEOS containers report host-shared CPU
+  # (12/12 false failures on a busy lab host). Memory/filesystem stay.
   - VerifyMemoryUtilization:
   - VerifyFileSystemUtilization:
   - VerifyNTP:

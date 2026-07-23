@@ -18,11 +18,9 @@ anta.tests.mlag:
   - VerifyMlagConfigSanity:
       filters:
         tags: [mlag]
-  - VerifyMlagReloadDelay:
-      reload_delay: 300
-      reload_delay_non_mlag: 330
-      filters:
-        tags: [mlag]
+  # VerifyMlagReloadDelay dropped: the guide sets NO reload-delay (EOS
+  # defaults rule) — asserting specific values against unset config was
+  # over-specification (6/6 false failures on first live run).
 
 anta.tests.interfaces:
   # Every port-channel healthy (no inactive member ports) — per-pod member

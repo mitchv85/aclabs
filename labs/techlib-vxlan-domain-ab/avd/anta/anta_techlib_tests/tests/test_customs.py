@@ -50,46 +50,65 @@ def test_type4_esi_substring():
 
 
 ES_TXT = """EVPN instance: VLAN 10
-  Route distinguisher: 10.255.0.0:10
-  Local IP address: 10.255.0.0
-  Encapsulation type: VXLAN
-  Local ethernet segment:
+  Route distinguisher: 10.0.1.7:10010
+  Service interface: VLAN-based
+  Local VXLAN IP address: {lip}
+  VXLAN: enabled
+  Remote ethernet segment:
     ESI: 0000:bbbb:0007:0008:0000
-    Interface: Port-Channel9
-    Mode: all-active
-    State: up
-    DF election algorithm: preference
-    Designated forwarder: {df}
-    Non-Designated forwarder: {ndf}
-EVPN instance: VLAN 70
-  Route distinguisher: 10.255.0.0:70
-  Local IP address: 10.255.0.0
+    Active TEPs: 10.1.2.7, 10.1.2.8
   Local ethernet segment:
-    ESI: 0000:bbbb:0007:0008:0000
-    Interface: Port-Channel9
-    Mode: all-active
-    State: up
-    DF election algorithm: preference
-    Designated forwarder: {df}
-    Non-Designated forwarder: {ndf}
+    ESI: 0000:aaaa:0007:0008:0000
+      Type: 0 (administratively configured)
+      Interface: Vxlan1
+      Mode: all-active
+      State: up
+      DF election algorithm: preference
+      Designated forwarder: {df}
+      Non-Designated forwarder: {ndf}
+EVPN instance: VLAN 50
+  Route distinguisher: 10.0.1.7:10050
+  Local VXLAN IP address: {lip}
+  Local ethernet segment:
+    ESI: 0000:aaaa:0007:0008:0000
+      Type: 0 (administratively configured)
+      Interface: Vxlan1
+      Mode: all-active
+      State: up
+      DF election algorithm: preference
+      Designated forwarder: {df}
+      Non-Designated forwarder: {ndf}
+    ESI: 01aa:c1ab:fc97:c700:0f00
+      Type: 1 (auto-generated from LACP parameters)
+      Interface: Port-Channel9
+      Mode: all-active
+      State: up
+      DF election algorithm: modulus
+      Designated forwarder: {df}
+      Non-Designated forwarder: {ndf}
 """
-ES_DF = ES_TXT.format(df="10.255.0.0", ndf="10.255.0.1")
-ES_NDF = ES_TXT.format(df="10.255.0.1", ndf="10.255.0.0")
+ES_DF = ES_TXT.format(lip="10.1.1.7", df="10.1.1.7", ndf="10.1.1.8")
+ES_NDF = ES_TXT.format(lip="10.1.1.8", df="10.1.1.7", ndf="10.1.1.8")
 
 
-def test_df_pass_primary():
-    r = run(VerifyEVPNDFElection, {"interface": "Port-Channel9", "expect_df": True}, [ES_DF])
+def test_df_pass_primary_vxlan1():
+    r = run(VerifyEVPNDFElection, {"interface": "Vxlan1", "expect_df": True}, [ES_DF])
     assert r.result == "success"
 
 
-def test_df_pass_secondary():
-    r = run(VerifyEVPNDFElection, {"interface": "Port-Channel9", "expect_df": False}, [ES_NDF])
+def test_df_pass_secondary_vxlan1():
+    r = run(VerifyEVPNDFElection, {"interface": "Vxlan1", "expect_df": False}, [ES_NDF])
     assert r.result == "success"
 
 
 def test_df_fail_wrong_winner():
-    r = run(VerifyEVPNDFElection, {"interface": "Port-Channel9", "expect_df": True}, [ES_NDF])
-    assert r.result == "failure" and "0/2" in r.messages[0]
+    r = run(VerifyEVPNDFElection, {"interface": "Vxlan1", "expect_df": False}, [ES_DF])
+    assert r.result == "failure" and "2/2" in r.messages[0]
+
+
+def test_df_lacp_modulus_segment_also_parses():
+    r = run(VerifyEVPNDFElection, {"interface": "Port-Channel9", "expect_df": True}, [ES_DF])
+    assert r.result == "success"
 
 
 def test_df_fail_no_segment():

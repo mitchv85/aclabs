@@ -9,7 +9,9 @@
 
 anta.tests.interfaces:
   - VerifyInterfaceErrors:
-  - VerifyInterfaceDiscards:
+  # VerifyInterfaceDiscards dropped here: the AVD auto-catalog already
+  # runs it (dupe = every discard failed twice); cEOS veths discard
+  # control-plane noise routinely, so one copy of that signal is plenty.
   - VerifyInterfaceErrDisabled:
   # Fabric L3 MTU census (final models): p2p 9114 on fabric nodes,
   # 9214 on the backbone DCI links; SVIs run 9014 and are excluded.

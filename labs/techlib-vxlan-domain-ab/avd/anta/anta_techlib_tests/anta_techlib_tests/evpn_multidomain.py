@@ -53,9 +53,9 @@ class VerifyEVPNType4Routes(AntaTest):
 class VerifyEVPNDFElection(AntaTest):
     """Assert this device's DF verdict for one ES-bearing interface.
 
-    Parses the TEXT output of `show bgp evpn instance` (documented in the
-    Arista VXLAN Configuration guide): each instance block lists
-    `Local IP address:` and, under `Local ethernet segment:`, the ESI,
+    Parses the TEXT output of `show bgp evpn instance` (live-capture
+    verified): each instance block lists `Local VXLAN IP address:` (older
+    docs: `Local IP address:`) and, under `Local ethernet segment:`, the
     `Interface:`, and `Designated forwarder: <VTEP IP>`. The device is the
     DF when the designated-forwarder IP equals the instance's local IP.
     DF election is per-ES/EVI — with the preference algorithm the verdict
@@ -77,7 +77,7 @@ class VerifyEVPNDFElection(AntaTest):
         verdicts: list[bool] = []
         for raw in text.splitlines():
             line = raw.strip()
-            if line.startswith("Local IP address:"):
+            if line.startswith(("Local VXLAN IP address:", "Local IP address:")):
                 local_ip = line.split(":", 1)[1].strip()
             elif line.startswith("Interface:"):
                 in_target = line.split(":", 1)[1].strip() == self.inputs.interface

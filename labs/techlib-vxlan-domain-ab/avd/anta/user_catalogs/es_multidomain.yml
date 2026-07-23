@@ -14,16 +14,19 @@ anta_techlib_tests.evpn_multidomain:
       filters:
         tags: [es]
 
-  # DF verdicts on the gateway pairs' Po9 (HostX8 segment).
+  # DF verdicts on the INTERCONNECT ES — Interface: Vxlan1, the
+  # preference-elected segment. (Live capture: Po9's host ES is
+  # auto-LACP with MODULUS DF election — per-EVI round-robin by design —
+  # so only the I-ESI carries the deterministic claim.)
   # A-side: preference 2000 (A-LEAF7) beats 1000 (A-LEAF8).
   # B-side: 2000/2000 tie — B-LEAF7 wins the lowest-originator tiebreak.
   - VerifyEVPNDFElection:
-      interface: Port-Channel9
+      interface: Vxlan1
       expect_df: true
       filters:
         tags: [df_primary]
   - VerifyEVPNDFElection:
-      interface: Port-Channel9
+      interface: Vxlan1
       expect_df: false
       filters:
         tags: [df_secondary]
