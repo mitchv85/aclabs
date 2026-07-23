@@ -53,13 +53,17 @@ class VerifyEVPNType4Routes(AntaTest):
 class VerifyEVPNDFElection(AntaTest):
     """Assert this device's DF verdict for one ES-bearing interface.
 
-    SHAPE NOTE: parses `show evpn ethernet-segment` — segments keyed by ESI
-    with `esiInterface` and a boolean `designatedForwarder` (reconstructed
-    shape; adjust on first live capture if EOS differs).
+    Parses the TEXT output of `show bgp evpn instance` (documented in the
+    Arista VXLAN Configuration guide): each instance block lists
+    `Local IP address:` and, under `Local ethernet segment:`, the ESI,
+    `Interface:`, and `Designated forwarder: <VTEP IP>`. The device is the
+    DF when the designated-forwarder IP equals the instance's local IP.
+    DF election is per-ES/EVI — with the preference algorithm the verdict
+    must be uniform across instances; any split is reported.
     """
 
     categories = ["evpn", "multihoming"]
-    commands = [AntaCommand(command="show evpn ethernet-segment", revision=1)]
+    commands = [AntaCommand(command="show bgp evpn instance", ofmt="text")]
 
     class Input(AntaTest.Input):
         interface: str
@@ -67,17 +71,29 @@ class VerifyEVPNDFElection(AntaTest):
 
     @AntaTest.anta_test
     def test(self) -> None:
-        out = self.instance_commands[0].json_output
-        segs = out.get("ethernetSegments", {}) or out.get("segments", {})
-        match = next((s for s in segs.values() if s.get("esiInterface") == self.inputs.interface), None)
-        if match is None:
-            self.result.is_failure(f"No Ethernet Segment found on {self.inputs.interface}")
+        text = self.instance_commands[0].text_output
+        local_ip: str | None = None
+        in_target = False
+        verdicts: list[bool] = []
+        for raw in text.splitlines():
+            line = raw.strip()
+            if line.startswith("Local IP address:"):
+                local_ip = line.split(":", 1)[1].strip()
+            elif line.startswith("Interface:"):
+                in_target = line.split(":", 1)[1].strip() == self.inputs.interface
+            elif line.startswith("Designated forwarder:") and in_target:
+                verdicts.append(line.split(":", 1)[1].strip() == local_ip)
+                in_target = False
+        if not verdicts:
+            self.result.is_failure(f"No Ethernet Segment on {self.inputs.interface} in any EVPN instance")
             return
-        df = bool(match.get("designatedForwarder", False))
-        if df is not self.inputs.expect_df:
-            self.result.is_failure(f"{self.inputs.interface}: designatedForwarder={df}, expected {self.inputs.expect_df}")
+        if all(v is self.inputs.expect_df for v in verdicts):
+            self.result.is_success()
             return
-        self.result.is_success()
+        self.result.is_failure(
+            f"{self.inputs.interface}: expected designated_forwarder={self.inputs.expect_df}, "
+            f"observed DF in {sum(verdicts)}/{len(verdicts)} instance(s)"
+        )
 
 
 class VerifyEVPNDPath(AntaTest):

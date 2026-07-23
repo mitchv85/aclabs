@@ -49,10 +49,32 @@ def test_type4_esi_substring():
     assert r.result == "failure" and "dead:beef" in r.messages[0]
 
 
-ES_DF = {"ethernetSegments": {"0000:bbbb:0007:0008:0000": {
-    "esiInterface": "Port-Channel9", "designatedForwarder": True}}}
-ES_NDF = {"ethernetSegments": {"0000:bbbb:0007:0008:0000": {
-    "esiInterface": "Port-Channel9", "designatedForwarder": False}}}
+ES_TXT = """EVPN instance: VLAN 10
+  Route distinguisher: 10.255.0.0:10
+  Local IP address: 10.255.0.0
+  Encapsulation type: VXLAN
+  Local ethernet segment:
+    ESI: 0000:bbbb:0007:0008:0000
+    Interface: Port-Channel9
+    Mode: all-active
+    State: up
+    DF election algorithm: preference
+    Designated forwarder: {df}
+    Non-Designated forwarder: {ndf}
+EVPN instance: VLAN 70
+  Route distinguisher: 10.255.0.0:70
+  Local IP address: 10.255.0.0
+  Local ethernet segment:
+    ESI: 0000:bbbb:0007:0008:0000
+    Interface: Port-Channel9
+    Mode: all-active
+    State: up
+    DF election algorithm: preference
+    Designated forwarder: {df}
+    Non-Designated forwarder: {ndf}
+"""
+ES_DF = ES_TXT.format(df="10.255.0.0", ndf="10.255.0.1")
+ES_NDF = ES_TXT.format(df="10.255.0.1", ndf="10.255.0.0")
 
 
 def test_df_pass_primary():
@@ -60,9 +82,14 @@ def test_df_pass_primary():
     assert r.result == "success"
 
 
+def test_df_pass_secondary():
+    r = run(VerifyEVPNDFElection, {"interface": "Port-Channel9", "expect_df": False}, [ES_NDF])
+    assert r.result == "success"
+
+
 def test_df_fail_wrong_winner():
     r = run(VerifyEVPNDFElection, {"interface": "Port-Channel9", "expect_df": True}, [ES_NDF])
-    assert r.result == "failure"
+    assert r.result == "failure" and "0/2" in r.messages[0]
 
 
 def test_df_fail_no_segment():
