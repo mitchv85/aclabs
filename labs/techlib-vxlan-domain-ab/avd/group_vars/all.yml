@@ -100,15 +100,6 @@ custom_structured_configuration_aaa_root:
 custom_structured_configuration_enable_password:
   disabled: null
 
-# Class 18 (partial), empirical CSC-null probe: eos_designs unconditionally
-# sets router_multicast.ipv4.software_forwarding=sfe on evpn_multicast nodes
-# (base/__init__.py:142, no knob) — the guide has the line on 0/27 nodes.
-# Null-merge clears the key if the merge+template honor it (this build is
-# the experiment; fallback documented in the ledger).
-custom_structured_configuration_router_multicast:
-  ipv4:
-    software_forwarding: null
-
 # eAPI: the guide runs https by EOS DEFAULT (block present, line omitted).
 # enable_https must be TRUE here because the arista.avd.anta_workflow
 # hard-gates every device on structured management_api_http enable_https/

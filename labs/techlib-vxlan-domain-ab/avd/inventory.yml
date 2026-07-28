@@ -8,6 +8,9 @@ all:
       children:
         DOMAIN_A_SPINES:
           vars:
+            custom_structured_configuration_router_multicast:
+              ipv4:
+                software_forwarding: null
             anta_tags: [domain_a, spine, ntp]
             type: spine
           hosts:
@@ -47,6 +50,9 @@ all:
       children:
         DOMAIN_B_SPINES:
           vars:
+            custom_structured_configuration_router_multicast:
+              ipv4:
+                software_forwarding: null
             anta_tags: [domain_b, spine, ntp, bfd, isis]
             type: spine
           hosts:
@@ -90,6 +96,9 @@ all:
     #########################################################
     BACKBONE:
       vars:
+        custom_structured_configuration_router_multicast:
+          ipv4:
+            software_forwarding: null
         anta_tags: [backbone, dci]
         type: backbone_router          # Custom node_type_keys entry defined in BACKBONE.yml
       hosts:

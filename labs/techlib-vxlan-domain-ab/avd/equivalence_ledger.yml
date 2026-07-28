@@ -1,0 +1,14 @@
+---
+# Equivalence Ledger — every render-drift class accepted under the
+# ON-BOX EQUIVALENCE contract. equiv_gate.py enforces: all diff lines
+# vs the golden render must match an entry (direction + regex) or FAIL.
+#
+# Entry format:
+# - id: short-name
+#   direction: extra | missing   # extra = new render adds the line
+#   pattern: '^regex$'           # matched against the stripped line
+#   rationale: why the fabric behaves identically
+#   on_box: evaporates | persists-benign
+#
+# P0 requires no entries (byte-zero relocation).
+classes: []
