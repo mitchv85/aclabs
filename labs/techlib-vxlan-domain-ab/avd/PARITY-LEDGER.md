@@ -385,3 +385,11 @@ tracked at two tiers:
   Verification play: deploy + per-node `show run` diff.
 
 Every line the guide asks for still renders: **missing stays 0.**
+
+## DRY-campaign amendment (Day 58)
+
+P0 (probe relocation, `7eac9c4`) removed 17 present-but-empty bare
+`router multicast` headers the {} host shadows had been rendering:
+**render floor 84 → 67** (missing stays 0; evaporating class 19 → 2;
+projected on-box floor ~16 unchanged). Refactor drift is now gated
+against `refactor_golden/configs` by `scripts/equiv_gate.py`.

@@ -42,14 +42,35 @@ def main() -> None:
     if args.build:
         build()
 
+    import difflib
     import yaml
     ledger = yaml.safe_load((ROOT / "equivalence_ledger.yml").read_text())["classes"] or []
-    diff = subprocess.run(["git", "diff", "--no-color", "--", "intended/configs"],
-                          cwd=ROOT, capture_output=True, text=True).stdout
+    golden_dir = ROOT / "refactor_golden/configs"
+    cur_dir = ROOT / "intended/configs"
+    golden = sorted(golden_dir.glob("*.cfg")) if golden_dir.exists() else []
+    if not golden:
+        # A gate that can compare nothing will pass everything. intended/ is
+        # GITIGNORED (build output), so git-diff was blind — the golden lives
+        # as an explicit committed snapshot instead. Refuse to run without it.
+        print("FATAL: refactor_golden/configs missing/empty — no baseline, no verdict")
+        sys.exit(2)
+    diff_lines: list[str] = []
+    changed_files = 0
+    for g in golden:
+        c = cur_dir / g.name
+        cur_text = c.read_text().splitlines() if c.exists() else []
+        d = list(difflib.unified_diff(g.read_text().splitlines(), cur_text, lineterm=""))
+        if d:
+            changed_files += 1
+            diff_lines.extend(d)
+    for c in sorted(cur_dir.glob("*.cfg")):
+        if not (golden_dir / c.name).exists():
+            changed_files += 1
+            diff_lines.extend(f"+{l}" for l in c.read_text().splitlines())
     hits: Counter = Counter()
     unclassified: list[str] = []
-    for raw in diff.splitlines():
-        if not raw or raw.startswith(("+++", "---", "@@", "diff ", "index ")):
+    for raw in diff_lines:
+        if not raw or raw.startswith(("+++", "---", "@@")):
             continue
         if raw[0] not in "+-":
             continue
@@ -65,7 +86,7 @@ def main() -> None:
             unclassified.append(f"{raw[0]} {line[:90]}")
 
     ml = model_lines()
-    print(f"scoreboard: model lines {ml} (baseline {BASELINE_LINES}, Δ {ml - BASELINE_LINES:+d})")
+    print(f"scoreboard: model lines {ml} (baseline {BASELINE_LINES}, Δ {ml - BASELINE_LINES:+d}) | files vs golden: {changed_files} changed")
     if hits:
         for cid, n in hits.most_common():
             print(f"ledger[{cid}]: {n} lines")
@@ -74,7 +95,7 @@ def main() -> None:
         for u in unclassified[:20]:
             print(f"  ✗ {u}")
         sys.exit(1)
-    print("EQUIV GATE CLEAN" + (" — byte-zero render" if not diff.strip() else ""))
+    print("EQUIV GATE CLEAN" + (" — byte-zero vs golden" if not diff_lines else " — drift fully ledger-classified"))
 
 if __name__ == "__main__":
     main()

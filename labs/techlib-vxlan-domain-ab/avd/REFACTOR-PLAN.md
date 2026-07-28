@@ -45,7 +45,20 @@ Golden render = commit `47012c7` `intended/configs/`.
 | Pass | Commit | Model lines | Δ | Ledger classes |
 |---|---|---|---|---|
 | baseline | 47012c7 | 4,427 | — | 0 |
-| P0 probe relocation | (this) | 4,376 | −51 | 0 (byte-zero) |
+| P0 probe relocation | 7eac9c4 | 4,376 | −51 model / −17 render extras | 0 (golden reset here) |
+
+## P0 correction & the gate hole (for the record)
+
+The kickoff commit claimed P0 was byte-zero. It was not — it was BETTER
+and the gate was BLIND: `intended/` is gitignored build output, so the
+git-diff gate compared nothing to nothing. Caught via the parity number
+(84 → 67); receipts: bare `router multicast` headers 19 → 2. The {}
+shadows had been rendering present-but-empty blocks — deleting them
+removed 17 evaporating-class extras (on-box identical; on-box floor ~16
+unchanged). Gate v2 diffs against an explicit committed snapshot
+(`refactor_golden/configs`, frozen at the post-P0 render), refuses to
+run without a baseline, and is canary-proven to detect. **Golden =
+post-P0 state; render floor vs guide now 67.**
 
 ## Claude Code bootstrap (the marathon runs there)
 1. Clone aclabs (branch `techlib-avd-update`) + adventures-with-claude; read
